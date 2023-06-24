@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const admin = require('firebase-admin');
+const cors = require('cors');
 
 const serviceAccount = {
     type: process.env.TYPE,
@@ -25,73 +26,15 @@ const port  = 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
+
+// Default Route
 app.get('/', (req, res) => {
     res.send("Astra API is running...")
 })
 
-// Get all dealers
-app.get('/api/v1/dealer', (req, res) => {
-    db.collection('dealers').get()
-        .then(snapshot => {
-            const data = snapshot.docs.map(doc => doc.data());
-            res.json({
-                message: 'Dealers fetched successfuly',
-                listDealer: data
-            });
-        })
-        .catch(error => {
-            res.status(500).json({ error: 'Something went wrong.' });
-        })
-});
-
-// Get specific dealers by LocationName
-async function getDealersByLocationName(locationName) {
-    try {
-        const locationQuerySnapshot = await db.collection('location').where('name', '==', locationName).get();
-
-        if (!locationQuerySnapshot) {
-            throw new Error('Location not found')
-        }
-
-        const locationDoc = locationQuerySnapshot.docs[0];
-        const locationId = locationDoc.id;
-        console.log("locationid: ", locationId)
-
-        const dealersQuerySnapshot = await db.collection('dealers').where('locationId', '==', locationId).get();
-
-        const dealers = [];
-        dealersQuerySnapshot.forEach((doc) => {
-            const dealerData = doc.data();
-            dealers.push({
-                id: doc.id,
-                ...dealerData
-            });
-        });
-
-        return dealers
-    } catch(error) {
-        console.error('Error fetching dealers by location name: ', error);
-        throw new Error('Something went wrong');
-    }
-}
-
-app.get('/api/v1/dealer/:locationName', async (req, res) => {
-    const locationName = req.params.locationName;
-    console.log(locationName)
-
-    try {
-        const dealers = await getDealersByLocationName(locationName);
-        res.json({
-            message: 'Dealers fetched successfully',
-            listDealer: dealers
-        })
-    } catch(error) {
-        res.status(500).json({ error: 'Something went wrong.' })
-    }
-});
-
-// Login
+// User Route
 app.post('/api/v1/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -127,6 +70,99 @@ app.post('/api/v1/login', async (req, res) => {
     }
 });
 
+// Location Route
+app.get('/api/v1/location', async (req, res) => {
+    try {
+        const locationQuerySnapshot = await db.collection('location').get();
+        const locations = [];
+        locationQuerySnapshot.forEach((doc) => {
+            const locationData = doc.data();
+            locations.push({
+                id: doc.id,
+                ...locationData
+            })
+        });
+
+        res.json({
+            message: 'Locations fetched successfully',
+            listLocation: locations
+        })
+    } catch(error) {
+        res.status(500).json({ error: 'Something went wrong.' })
+    }
+});
+
+// Dealer Route
+// Get all dealers
+app.get('/api/v1/dealer', async (req, res) => {
+    try {
+        const dealerQuerySnapshot = await db.collection('dealers').get();
+        const dealers = [];
+        dealerQuerySnapshot.forEach((doc) => {
+            const dealerData = doc.data();
+            dealers.push({
+                id: doc.id,
+                ...dealerData
+            });
+        });
+
+        res.json({
+            message: 'Dealers fetched successfully',
+            listDealers: dealers
+        })
+    } catch(error) {
+        res.status(500).json({ error: 'Something went wrong.' })
+    }
+});
+
+// Get specific dealers by LocationName
+async function getDealersByLocationName(locationName) {
+    try {
+        const locationQuerySnapshot = await db.collection('location').where('name', '==', locationName).get();
+
+        if (!locationQuerySnapshot) {
+            throw new Error('Location not found')
+        }
+
+        const locationDoc = locationQuerySnapshot.docs[0];
+        const locationId = locationDoc.id;
+
+        const dealersQuerySnapshot = await db.collection('dealers').where('locationId', '==', locationId).get();
+
+        const dealers = [];
+        dealersQuerySnapshot.forEach((doc) => {
+            const dealerData = doc.data();
+            dealers.push({
+                id: doc.id,
+                ...dealerData
+            });
+        });
+
+        return dealers
+    } catch(error) {
+        console.error('Error fetching dealers by location name: ', error);
+        throw new Error('Something went wrong');
+    }
+}
+
+app.get('/api/v1/dealer/:locationName', async (req, res) => {
+    const locationName = req.params.locationName;
+    console.log(locationName)
+
+    try {
+        const dealers = await getDealersByLocationName(locationName);
+        res.json({
+            message: 'Dealers fetched successfully',
+            listDealer: dealers
+        })
+    } catch(error) {
+        res.status(500).json({ error: 'Something went wrong.' })
+    }
+});
+
+// Task Route
+
+// Server Status
 app.listen(port, () => {
-    console.log(`Server is listening on port ${port}`)
+    console.log(`Server is listening on url http://localhost:${port}`)
 });
