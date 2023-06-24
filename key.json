@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "astra-motor-management",
+  "private_key_id": "76fbb7e760d233efda12baf9495b27ba93fd35b4",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC6uOeWkXKXjUJD\ncsuWn60pYB2qmGVy1U2M/9tqSMrApQko0BfSCTsEHWFs8MGs2hSPPgSNoQ6oZjzw\neFMEVnwhLlGQW6n5+IgmfaCiEj5ZcmSuQPEh/jJpxMsqsrIDlworywhpHVYfV/ev\nNEQsuAjdIFrZ7IXL8kQU0QBz/2qv1kXldjCZo3x7pQ5yqCJA+lS4CFb5EDxYPGKM\ncn/3TBxivHl6U7Y4E2+gll5TW/0vApC3rT1Fy9gszkMmMsz0jwkucbYLGNqwOIPE\nKAoD4gIy9mMefZjgZocd0ukja7FX5D0AWkinIxUKuGKUMAUr654VvW8uIbFC61mv\n8zyPmPrnAgMBAAECggEAIuij33oE1wGhVFPXbSsgKB6gnT7NpKjtTUGeZ2IBif+w\n1TEGaw2vu2a0yrW+N88zzc318vab827d0MVmG+cBYQC0Xg1NG39UEQImsHZBst5Y\npV1d15GbIjwZEbwD3Pj1fVeBlIlYCxcapuZaIpQrkA/W/GwkXYtHIC8s6wLjEslm\nV6FxiJqG/rjDMvYI5kmbVxuBtTuIxf5bL4B5e4SXgZG6T08AQQqUNRCyEbShgd0J\n8oJRAecBFZgHbfz2hQLt1m55dGo40rf7qOumHDmvvTIqY6oeKacX+8CFvJ9kR01m\nCqfhry9AVX2hfDbsNtt4bB0pJNFhpIhMGAPnkyTHMQKBgQDeZyQO9ODzR9s5mslY\nXM3oAy/u8Mq9XHSZUbJmQKBEQMrUWiGjfASk+8q49l96xj0UY3mNQFKOWvUX7rAo\nxWXQAOusujKSJA+ipXKdX70dlP+f9mLXXmK+GrBlK5RRt93DVPvJjZy9YcEKtL52\nv66rDCMmhCv3O5C2PcAbVYSqdwKBgQDW7eh39Fe8WvVtgkDjL9RYNzb5oAHCMABi\nIezi64UzbJpH0v9SMsTP7/ES/phMfkJ3Gr/KN65bzqDZcEUxXQtuncoRkkMD3Ffh\n3RtCdZ474cwbJ2zh1dBk8fMboechI3FkPeXxdcA6X1kVn0VAs+5SD24mpkAuo2Ox\neDzwABTfEQKBgHIIimmMz6aNym8P2XsQIpd6wuIN3rYXKMXQKNva+RHl8tnM2QCd\nPzhkzj3mPXCTIpBIrPNq7qmFI7RAs1xEUn7DahOnaPSbvtSTZmAgzbPUSPl4+Jcb\nEyAMSTOmk6cO0ossEOn4TUyhSby2jg4PHH0hfQhrrqtWhE2c/dpGD/7jAoGBAMsp\nlc4VxP1Bya7bKfTWmFVO1AOAUUk60JHyWZZiZMWoSenMtBYB8XJQ78Mxr8rWqoMl\nYNeIbKNRnVAMRQuVVSIZuxGC/R/gH55bv9HBlnIqTSH50X1j/Bn/bvrWvsDfXOcR\nb5Mf6DYFPRMoO3Ee5A7jkQ6tpguv3KO78XY3zYLRAoGBAKkoV/4dTOmH10Pi4e+7\n2cqMeCk+jwUzu0FEhfEfmvDCfdi1oHKAFfZN6xU3XzQRflwK0c/VKgNmFw8kxufp\nMd4TJzy/GdqFzAuqg3RS85w8EyM4k+ISset+/ee5HK06hshmwqzWAIg9+0/MikMT\ns1jtZOznE2txW6cl6jNUUX3B\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-izaea@astra-motor-management.iam.gserviceaccount.com",
+  "client_id": "118203822727098019704",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-izaea%40astra-motor-management.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
