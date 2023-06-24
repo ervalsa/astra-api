@@ -45,36 +45,18 @@ app.get('/api/v1/dealer', (req, res) => {
         })
 });
 
-async function getDealersByLocationId(locationId) {
-    try {
-        const dealersRef = db.collection('dealers');
-        const querySnapshot = await dealersRef.where('locationId', '==', locationId).get();
-
-        const dealers = [];
-        querySnapshot.forEach((doc) => {
-            const dealerData = doc.data();
-            dealers.push({
-                ...dealerData
-            });
-        });
-
-        return dealers;
-    } catch(error) {
-        console.error('Error fetching dealers: ', error);
-        throw new Error('Something went wrong');
-    }
-}
-
+// Get specific dealers by LocationName
 async function getDealersByLocationName(locationName) {
     try {
         const locationQuerySnapshot = await db.collection('location').where('name', '==', locationName).get();
 
-        if (locationQuerySnapshot.empty) {
+        if (!locationQuerySnapshot) {
             throw new Error('Location not found')
         }
 
         const locationDoc = locationQuerySnapshot.docs[0];
         const locationId = locationDoc.id;
+        console.log("locationid: ", locationId)
 
         const dealersQuerySnapshot = await db.collection('dealers').where('locationId', '==', locationId).get();
 
@@ -94,24 +76,9 @@ async function getDealersByLocationName(locationName) {
     }
 }
 
-// Get specific dealers by LocationId
-app.get('/api/v1/dealer/:locationId', async (req, res) => {
-    const locationId = req.params.locationId;
-
-    try {
-        const dealers = await getDealersByLocationId(locationId);
-        res.json({
-            message: 'Dealers fetched successfully',
-            listDealer: dealers
-        })
-    } catch(error) {
-        res.status(500).json({ error: 'Something went wrong.' })
-    }
-});
-
-// Get specific dealers by LocationName
 app.get('/api/v1/dealer/:locationName', async (req, res) => {
     const locationName = req.params.locationName;
+    console.log(locationName)
 
     try {
         const dealers = await getDealersByLocationName(locationName);
