@@ -297,7 +297,7 @@ app.post('/api/v1/task', upload.fields([{ name: 'taskTemuanPhotos' }, { name: 't
     
         res.json({ 
             message: 'Task added successfully', 
-            data: task
+            taskId
         });
     } catch (error) {
         console.error('Error adding task: ', error);
