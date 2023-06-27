@@ -1,7 +1,9 @@
-require('dotenv').config();
 const express = require('express');
 const admin = require('firebase-admin');
 const cors = require('cors');
+const dotenv = require('dotenv');
+const multer = require('multer');
+dotenv.config();
 
 const serviceAccount = {
     type: process.env.TYPE,
@@ -16,8 +18,12 @@ const serviceAccount = {
     client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
 }
 
+// config multer with storage
+const upload = multer();
+
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: process.env.STORAGE_BUCKET
 });
 
 const app = express();
@@ -28,6 +34,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
+class TaskModel {
+    constructor(id, dealerId, name, description, status, picName, taskTemuanPhotos, taskProgressPhotos, taskStartDate, taskEndDate) {
+      this.id = id;
+      this.dealerId = dealerId;
+      this.name = name;
+      this.description = description;
+      this.status = status;
+      this.picName = picName;
+      this.taskTemuanPhotos = taskTemuanPhotos;
+      this.taskProgressPhotos = taskProgressPhotos;
+      this.taskStartDate = taskStartDate;
+      this.taskEndDate = taskEndDate;
+    }
+  }
 
 // Default Route
 app.get('/', (req, res) => {
@@ -71,6 +91,7 @@ app.post('/api/v1/login', async (req, res) => {
 });
 
 // Location Route
+// Get All Location
 app.get('/api/v1/location', async (req, res) => {
     try {
         const locationQuerySnapshot = await db.collection('location').get();
@@ -88,12 +109,37 @@ app.get('/api/v1/location', async (req, res) => {
             listLocation: locations
         })
     } catch(error) {
-        res.status(500).json({ error: 'Something went wrong.' })
+        res.status(500).json({ error: 'Something went wrong.' });
+    }
+});
+
+// Get Location by ID
+app.get('/api/v1/location/:id', async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const locationQuerySnapshot = await db.collection('location').doc(id).get();
+        
+        if (!locationQuerySnapshot.exists) {
+            throw new Error('Location not found.')
+        }
+
+        const locationData = locationQuerySnapshot.data();
+
+        res.json({
+            message: 'Location fetched successfully',
+            locationData: {
+                id: locationQuerySnapshot.id,
+                ...locationData
+            }
+        });
+    } catch(error) {
+        res.status(500).json({ error: 'Something went wrong.' });
     }
 });
 
 // Dealer Route
-// Get all dealers
+// Get All Dealers
 app.get('/api/v1/dealer', async (req, res) => {
     try {
         const dealerQuerySnapshot = await db.collection('dealers').get();
@@ -115,13 +161,13 @@ app.get('/api/v1/dealer', async (req, res) => {
     }
 });
 
-// Get specific dealers by LocationName
+// Get Specific Dealers by LocationName
 async function getDealersByLocationName(locationName) {
     try {
         const locationQuerySnapshot = await db.collection('location').where('name', '==', locationName).get();
 
         if (!locationQuerySnapshot) {
-            throw new Error('Location not found')
+            throw new Error('Location not found.')
         }
 
         const locationDoc = locationQuerySnapshot.docs[0];
@@ -147,7 +193,6 @@ async function getDealersByLocationName(locationName) {
 
 app.get('/api/v1/dealer/:locationName', async (req, res) => {
     const locationName = req.params.locationName;
-    console.log(locationName)
 
     try {
         const dealers = await getDealersByLocationName(locationName);
@@ -161,6 +206,101 @@ app.get('/api/v1/dealer/:locationName', async (req, res) => {
 });
 
 // Task Route
+// uploadPhotoToFirestore
+async function uploadPhotoToFirestore(file, folderPath, taskId) {
+    try {
+        const bucket = admin.storage().bucket();
+        const fileName = folderPath + '/'+ taskId + '/' + Date.now() + '_' + file.originalname;
+        const fileUpload = bucket.file(fileName);
+        
+        await new Promise((resolve, reject) => {
+            const blobStream = fileUpload.createWriteStream({ resumable: false });
+            blobStream.on('error', reject);
+            blobStream.on('finish', resolve);
+            blobStream.end(file.buffer);
+        });
+  
+        await fileUpload.makePublic();
+
+        const imageUrl = `https://storage.googleapis.com/${bucket.name}/${fileUpload.name}`;
+        return imageUrl;
+    } catch (error) {
+        console.error('Error uploading photo to Firestore: ', error);
+        throw new Error('Failed to upload photo to Firestore');
+    }
+}
+
+// saveTaskToFirestore
+async function saveTaskToFirestore(task, taskTemuanPhotos, taskProgressPhotos) {
+    try {
+        const tasksCollection = db.collection('tasks');
+
+        if (!task.name) {
+            throw new Error('Task name is required');
+        }
+
+        const taskData = {
+            dealerId: task.dealerId || '',
+            name: task.name || '',
+            description: task.description || '',
+            status: task.status || '',
+            picName: task.picName || '',
+            taskTemuanPhotos: [],
+            taskProgressPhotos: [],
+            taskStartDate: task.taskStartDate || null,
+            taskEndDate: task.taskEndDate || null,
+        };
+
+        const docRef = await tasksCollection.add(taskData);
+        const taskId = docRef.id;
+
+        taskData.taskTemuanPhotos = await Promise.all(taskTemuanPhotos.map(file => uploadPhotoToFirestore(file, 'temuan', taskId)));
+        taskData.taskProgressPhotos = await Promise.all(taskProgressPhotos.map(file => uploadPhotoToFirestore(file, 'progress', taskId)));
+
+        await docRef.update(taskData)
+
+        return taskId;
+    } catch (error) {
+        console.error('Error saving task to Firestore: ', error);
+        throw new Error('Failed to save task to Firestore');
+    }
+}
+
+// Add Task
+app.post('/api/v1/task', upload.fields([{ name: 'taskTemuanPhotos' }, { name: 'taskProgressPhotos' }]), async (req, res) => {
+    try {
+        const dealerId = req.body.dealerId;
+        const name = req.body.name;
+        const description = req.body.description;
+        const status = req.body.status;
+        const picName = req.body.picName;
+        const taskStartDate = req.body.taskStartDate;
+        const taskEndDate = req.body.taskEndDate;
+  
+        let taskTemuanPhotos = req.files['taskTemuanPhotos'] || [];
+        let taskProgressPhotos = req.files['taskProgressPhotos'] || [];
+    
+        const task = new TaskModel(
+            null,
+            dealerId,
+            name,
+            description,
+            status,
+            picName,
+            taskTemuanPhotos,
+            taskProgressPhotos,
+            taskStartDate,
+            taskEndDate
+        );
+    
+        const taskId = await saveTaskToFirestore(task, taskTemuanPhotos, taskProgressPhotos);
+    
+        res.json({ message: 'Task added successfully', taskId });
+    } catch (error) {
+        console.error('Error adding task: ', error);
+        res.status(500).json({ error: 'Failed to add task' });
+    }
+});
 
 // Server Status
 app.listen(port, () => {
