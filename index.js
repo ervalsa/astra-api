@@ -295,7 +295,10 @@ app.post('/api/v1/task', upload.fields([{ name: 'taskTemuanPhotos' }, { name: 't
     
         const taskId = await saveTaskToFirestore(task, taskTemuanPhotos, taskProgressPhotos);
     
-        res.json({ message: 'Task added successfully', taskId });
+        res.json({ 
+            message: 'Task added successfully', 
+            data: task
+        });
     } catch (error) {
         console.error('Error adding task: ', error);
         res.status(500).json({ error: 'Failed to add task' });
