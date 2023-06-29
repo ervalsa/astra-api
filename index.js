@@ -56,7 +56,8 @@ app.get('/', (req, res) => {
 
 // User Route
 app.post('/api/v1/login', async (req, res) => {
-    const { username, password } = req.body;
+    const username = req.body.username;
+    const password = req.body.password;
 
     try {
         const userRef = db.collection('users').where('username', '==', username).limit(1);
